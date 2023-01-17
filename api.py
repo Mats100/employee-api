@@ -28,7 +28,7 @@ class UpdateData(BaseModel):
 data = []
 
 @app.get("/")
-def read_api(db: Session = Depends((get_db))):
+def read_api(db: Session = Depends(get_db)):
     return db.query(models.Employees).all()
 
 @app.get("/get-employee/{data_id}")
@@ -42,23 +42,20 @@ def get_name(name: str = Query(None, title="Name", description="Name of employee
             return data[data_id]
     return {"Data": "Not Found"}
 
-@app.post("/create-record/{data_id}")
-def create_record(data_id: int, employee: Employee, db: Session = Depends(get_db)):
-   Employees_model = models.Employees()
-   Employees_model.id = employee.id
-   Employees_model.name = employee.name
-   Employees_model.profession = employee.profession
-   db.add(Employees_model)
+@app.post("/create-record/")
+def create_record(db: Session = Depends(get_db)):
+   employee_model = models.Employees()
+   db.add(employee_model)
    db.commit()
-   return data[data_id]
+   db.refresh(employee_model)
 
 @app.put("/update-item/{data_id}")
-def update_item(data_id: int, employee: Employee, db: Session = Depends(get_db)):
-    Employee_model = db.query(models.Employees).filter(models.Employees.id == data_id).first()
+def update_item( employee: Employee, db: Session = Depends(get_db)):
+    Employee_model = db.query(models.Employees).filter(models.Employees.id == id).first()
     if Employee_model is None:
         raise HTTPException(
             status_code=404,
-            detail=f"ID{data_id}: Does not exist"
+            detail=f"ID{}: Does not exist"
         )
     Employee_model.name = employee.name
     Employee_model.profession =employee.profession
