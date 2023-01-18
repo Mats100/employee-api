@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Query, Depends, HTTPException
-from typing import Optional
 from pydantic import BaseModel
 import models
 from database import engine, SessionLocal
@@ -20,16 +19,8 @@ app = FastAPI()
 
 
 class Employee(BaseModel):
-    id: int
     name: str
     profession: str
-
-
-class UpdateData(BaseModel):
-    id: Optional[int] = None
-    name: Optional[str] = None
-    profession: Optional[str] = None
-
 
 
 @app.get("/")
@@ -42,12 +33,11 @@ def create_record(employee: Employee, db: Session = Depends(get_db)):
     employee_model = models.Employees(name=employee.name, profession=employee.profession)
     db.add(employee_model)
     db.commit()
-    db.refresh(employee_model)
 
 
-@app.put("/update-user{data_id}")
-def update_user(employee: Employee, db: Session = Depends(get_db)):
-    employee_model = db.query(models.Employees).filter(models.Employees.id == employee.id).first()
+@app.put("/update-user/{Id}")
+def update_user(Id: int, employee: Employee, db: Session = Depends(get_db)):
+    employee_model = db.query(models.Employees).filter(models.Employees.id == Id).first()
     if employee_model is None:
         raise HTTPException(
             status_code=404,
@@ -55,7 +45,6 @@ def update_user(employee: Employee, db: Session = Depends(get_db)):
     employee_model.name = employee.name
     employee_model.profession = employee.profession
 
-    db.add(employee_model)
     db.commit()
     db.refresh(employee_model)
     return employee_model
