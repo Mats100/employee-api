@@ -7,5 +7,6 @@ class Employees(Base):
     id = Column(INTEGER, primary_key=True, index=True)
     name = Column(String)
     profession = Column(String)
+    experience = Column(INTEGER, index=True)
 
 
