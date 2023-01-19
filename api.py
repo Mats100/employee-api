@@ -14,20 +14,27 @@ def get_db():
     finally:
         db.close()
 
-
 app = FastAPI()
-
 
 class Employee_Data(BaseModel):
     name: str
     profession: str
     experience: int
 
+@app.get("/User/{Id}",description="Enter the ID of the user you wanna get!!")
+def get_user(Id: int,  db: Session = Depends(get_db)):
+    employee_model =db.query(models.Employees).filter(models.Employees.id == Id).first()
+    if employee_model is None:
+        raise HTTPException(
+            status_code=400, detail="User not Found"
+        )
+    db.refresh(employee_model)
+    return employee_model
+
 
 @app.get("/")
 def read_api(db: Session = Depends(get_db)):
     return db.query(models.Employees).all()
-
 
 @app.post("/create-record/")
 def create_record(employee: Employee_Data, db: Session = Depends(get_db)):
@@ -36,7 +43,6 @@ def create_record(employee: Employee_Data, db: Session = Depends(get_db)):
     db.add(employee_model)
     db.commit()
     db.refresh(employee_model)
-
     return employee_model
 
 @app.put("/update-user/{Id}")
